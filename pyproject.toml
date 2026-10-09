@@ -1,0 +1,18 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "scopeguard"
+version = "0.1.0"
+description = "Frozen issue contracts and Git scope checks for coding agents"
+requires-python = ">=3.11"
+license = {text = "MIT"}
+authors = [{name = "Hardik Shrestha"}]
+
+[project.scripts]
+scopeguard = "scopeguard.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["scopeguard*"]
+
