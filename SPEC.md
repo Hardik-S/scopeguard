@@ -14,9 +14,12 @@ scopeguard.engine.freeze(repo: pathlib.Path, contract_path: pathlib.Path) -> dic
 scopeguard.engine.evaluate(repo: pathlib.Path, contract_path: pathlib.Path, baseline: dict, run_checks: bool = False) -> dict
 - Reject invalid baseline and contract. Verify the contract hash matches the baseline.
 - Inspect all candidate changes against base_sha, including staged, unstaged, committed, deleted, renamed (treat as deleted+added), and untracked nonignored paths. Use Git NUL-delimited output, never line parsing.
+- v0.1 rejects repositories containing submodules/gitlinks and changed embedded Git directories before command execution. It must never convert uninspectable directory state into PASS.
+- Special filesystem nodes exposed by Git change discovery are unsupported and rejected; only regular files, symlinks and missing/deleted paths can be fingerprinted.
 - Compare every path with allowed_paths and forbidden_paths. Ignore only the tool's .scopeguard/ output directory. Resolve base_sha as a commit before diffing.
 - Run checks only with run_checks=True. Execute exact argv with shell=False from the repo root. Each check has a timeout; capture at most 12000 characters each of stdout/stderr; mark nonzero exits, missing executables and timeouts failed.
 - Compare candidate content fingerprints before and after check execution. If tracked or untracked source state changes during verification, verdict cannot pass. Include changes caused by checks in the final changed_paths and scope violations.
+- Fingerprints include length-delimited content records, observed file modes, and full staged blob identities; identical Git status labels alone are insufficient.
 - Return keys schema_version, verdict (PASS|FAIL|INCOMPLETE), base_sha, head_sha, contract_sha256, changed_paths, violations (string array), checks (records with id, status, argv, exit_code, stdout, stderr), state_changed_during_checks (bool). Extra evidence keys are allowed. PASS requires no violation, every check executed and passing, and unchanged candidate state during checks. Without --run-checks use INCOMPLETE unless there is a definite FAIL.
 - engine exceptions for invalid input should be ValueError. Operational errors must be actionable and fail closed.
 
@@ -33,5 +36,4 @@ Real temporary Git repositories must cover: valid owned changes; staged and unst
 
 ## Limits
 
-No filesystem sandbox, credential isolation, worker identity attestation, remote receipts, signed evidence, or semantic proof of issue fulfillment. Contracts and check commands require trusted Director review. The tool cannot reliably protect itself from a malicious actor controlling its executable or the verifier environment.
-
+No filesystem sandbox, credential isolation, worker identity attestation, remote receipts, signed evidence, or semantic proof of issue fulfillment. Submodules and embedded Git directories are unsupported and fail closed. Command deadlines include a short bounded cleanup grace for reaping a killed process; descendant processes are not isolated. Contracts and check commands require trusted Director review. The tool cannot reliably protect itself from a malicious actor controlling its executable or the verifier environment.
