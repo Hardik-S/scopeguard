@@ -14,7 +14,7 @@ class ReleaseRegressions(GitRepo):
         original = Path.is_file
 
         def is_file(path):
-            if path == target:
+            if path.samefile(target):
                 return False
             return original(path)
 
@@ -107,7 +107,7 @@ class ReleaseRegressions(GitRepo):
         original = Path.read_bytes
 
         def read_bytes(path):
-            if path == target:
+            if path.samefile(target):
                 raise PermissionError("synthetic unreadable source")
             return original(path)
 

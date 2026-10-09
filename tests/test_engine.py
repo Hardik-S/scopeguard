@@ -340,9 +340,11 @@ class EngineScopeTests(GitRepo):
         self.assertLessEqual(len(check["stderr"]), 12000)
 
     def test_timeout_when_descendant_keeps_pipes_open(self):
+        # Keep the short-lived child outside the fixture's Windows cleanup lock.
         command = (
-            "import subprocess, sys; "
-            "subprocess.Popen([sys.executable, '-c', 'import time; time.sleep(2)'])"
+            "import subprocess, sys, tempfile; "
+            "subprocess.Popen([sys.executable, '-c', 'import time; time.sleep(2)'], "
+            "cwd=tempfile.gettempdir())"
         )
         self.contract["checks"] = [{
             "id": "inherited-pipes",
